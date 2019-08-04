@@ -1,8 +1,8 @@
 import glob, os
 import pandas as pd
 
-original_cwd = "../../data/"
-os.chdir(original_cwd)
+os.chdir("../../data/")
+original_cwd = os.getcwd()
 
 df = pd.read_csv("raw/train.csv")
 records = df.to_records(index=False)
