@@ -1,0 +1,53 @@
+{
+    "name": "DenseNet121",
+    "n_gpu": 1,
+
+    "arch": {
+        "type": "DenseNet",
+        "args": {}
+    },
+    "data_loader": {
+        "type": "RCICDataLoader",
+        "args":{
+            "data_dir": "data/raw",
+            "batch_size": 8,
+            "shuffle": true,
+            "validation_split": 0.1,
+            "num_workers": 2
+        }
+    },
+    "optimizer": {
+        "type": "SGD",
+        "args":{
+            "lr": 0.01,
+            "momentum": 0.9,
+            "weight_decay": 0
+        }
+    },
+    "loss": "nll_loss",
+    "metrics": [
+        "accuracy"
+    ],
+    "lr_scheduler": {
+        "type": "ExponentialLR",
+        "args": {
+            "gamma": 0.95
+        }
+    },
+    "trainer": {
+        "epochs": 200,
+
+        "save_dir": "saved/",
+        "save_period": 1,
+        "verbosity": 2,
+        
+        "monitor": "min val_loss",
+        "early_stop": 10,
+
+        "tensorboard": {
+            "enabled": true,
+            "modules": ["tensorboardX", "torch.utils.tensorboard"]
+        }
+    }
+}
+
