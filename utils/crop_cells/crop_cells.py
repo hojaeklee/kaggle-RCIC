@@ -83,6 +83,15 @@ def crop_cells(sample_id, image_dir, save_dir, min_nuc_size = 100, cropsize = 32
         for cn, img in channels.items():
             cropped = img[c1:c2, c3:c4]
             image_name = save_dir + sample_id + "_cid"  + str(i) + "_" + cn  + "_cx" + str(x) + "_cy" + str(y)+ ".png"
+            
+	    #create path if it doesn't exist
+            if not os.path.exists(os.path.dirname(image_name)):
+                try:
+                    os.makedirs(os.path.dirname(image_name))
+                except OSError as exc: # Guard against race condition
+                    if exc.errno != errno.EEXIST:
+                        raise
+		
             Image.fromarray(cropped).save(image_name)
     return
 
