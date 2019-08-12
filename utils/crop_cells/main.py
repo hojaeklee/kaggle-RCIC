@@ -22,7 +22,7 @@ def main():
             cropsize = 64 # this is the RADIUS
 
             threshold = 0.5 # remove cells of sizes above this quantile (they are likely to be doublets or multiplets)
-            for sample_id in sample_ids[0:2]:
+            for sample_id in sample_ids:
                 crop_cells(sample_id, image_dir, save_dir, min_nuc_size, cropsize, threshold)
 
 if __name__ == "__main__":

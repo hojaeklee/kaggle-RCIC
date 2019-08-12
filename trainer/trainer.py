@@ -60,10 +60,9 @@ class Trainer(BaseTrainer):
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
-            output, feature = self.model(data)
+            output = self.model(data)
             
-            arc_face_loss_fn = self.loss()
-            loss = arc_face_loss_fn(output, target)
+            loss = self.loss(output, target)
             loss.backward()
             self.optimizer.step()
 
@@ -71,6 +70,8 @@ class Trainer(BaseTrainer):
             self.writer.add_scalar('loss', loss.item())
             total_loss += loss.item()
             total_metrics += self._eval_metrics(output, target)
+
+            del data, target, output
 
             if batch_idx % self.log_step == 0:
                 self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
@@ -112,10 +113,9 @@ class Trainer(BaseTrainer):
             for batch_idx, (data, target) in enumerate(self.valid_data_loader):
                 data, target = data.to(self.device), target.to(self.device)
 
-                output, feature = self.model(data)
+                output = self.model(data)
             
-                arc_face_loss_fn = self.loss()
-                loss = arc_face_loss_fn(output, target)
+                loss = self.loss(output, target)
 
                 self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
                 self.writer.add_scalar('loss', loss.item())

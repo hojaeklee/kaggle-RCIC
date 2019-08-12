@@ -12,12 +12,12 @@ site2_ncells = []
 for index in range(len(records)):
     record = records[index]
     os.chdir(original_cwd)
-    os.chdir(f'cropped/{record.experiment}/Plate{record.plate}/')
+    os.chdir(f'cropped/train/{record.experiment}/Plate{record.plate}/')
     
     site1_ncells.append(int(len(glob.glob(f'{record.well}_s1*.png'))/6))
     site2_ncells.append(int(len(glob.glob(f'{record.well}_s2*.png'))/6))
 
-    df['site1_ncells'] = site1_ncells
+df['site1_ncells'] = site1_ncells
 df['site2_ncells'] = site2_ncells
 
 

@@ -1,3 +1,4 @@
+import math
 from PIL import Image
 
 import pandas as pd
@@ -17,11 +18,13 @@ class ImagesDS(D.Dataset):
         self.mode = mode
         self.img_dir = img_dir
         self.len = df.shape[0]
-        self.transforms = T.Compose([T.RandomHorizontalFlip(), T.RandomRotation(180), T.ToTensor()])
-        # self.transforms = T.Compose([T.ToTensor()])
+        
+        self.transforms = T.Compose([T.Resize(480), T.RandomHorizontalFlip(), T.RandomRotation(90), T.ToTensor()])
+    
     def _load_img_as_tensor(self, file_name):
         with Image.open(file_name) as img:
-            return self.transforms(img)
+            transformed_img = self.transforms(img)
+            return transformed_img
 
     def _get_img_path(self, index, channel):
         experiment, well, plate = self.records[index].experiment, self.records[index].well, self.records[index].plate

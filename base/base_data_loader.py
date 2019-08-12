@@ -1,3 +1,4 @@
+import pandas as pd
 import numpy as np
 from torch.utils.data import DataLoader
 from torch.utils.data.dataloader import default_collate
@@ -29,6 +30,7 @@ class BaseDataLoader(DataLoader):
     def _split_sampler(self, split):
         if split == 0.0:
             return None, None
+        
         idx_full = np.arange(self.n_samples)
 
         np.random.seed(0)
@@ -43,6 +45,9 @@ class BaseDataLoader(DataLoader):
 
         valid_idx = idx_full[0:len_valid]
         train_idx = np.delete(idx_full, np.arange(0, len_valid))
+
+        # train_idx, valid_idx = self.manual_val_split()
+        # assert (len(train_idx) + len(valid_idx)) == self.n_samples
 
         train_sampler = SubsetRandomSampler(train_idx)
         valid_sampler = SubsetRandomSampler(valid_idx)
@@ -59,3 +64,9 @@ class BaseDataLoader(DataLoader):
         else:
             return DataLoader(sampler=self.valid_sampler, **self.init_kwargs)
 
+    def manual_val_split(self):
+        df = pd.read_csv("data/raw/train_valid_idx.csv")
+        df = pd.concat([df, df], axis = 0)
+        valid_idx = df.index[df["val"] == True].tolist()
+        train_idx = df.index[df["val"] == False].tolist()
+        return train_idx, valid_idx
