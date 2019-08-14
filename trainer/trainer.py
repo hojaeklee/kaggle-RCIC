@@ -60,7 +60,7 @@ class Trainer(BaseTrainer):
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
-            output, features = self.model(data)
+            output, _ = self.model(data)
             
             loss = self.loss(output, target)
             loss.backward()
@@ -82,6 +82,7 @@ class Trainer(BaseTrainer):
 
             if batch_idx == self.len_epoch:
                 break
+        
 
         log = {
             'loss': total_loss / self.len_epoch,
@@ -113,7 +114,7 @@ class Trainer(BaseTrainer):
             for batch_idx, (data, target) in enumerate(self.valid_data_loader):
                 data, target = data.to(self.device), target.to(self.device)
 
-                output, features = self.model(data)
+                output, _ = self.model(data)
             
                 loss = self.loss(output, target)
 
