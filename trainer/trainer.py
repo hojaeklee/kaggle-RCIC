@@ -60,7 +60,7 @@ class Trainer(BaseTrainer):
             data, target = data.to(self.device), target.to(self.device)
 
             self.optimizer.zero_grad()
-            output = self.model(data)
+            output, features = self.model(data)
             
             loss = self.loss(output, target)
             loss.backward()
@@ -113,7 +113,7 @@ class Trainer(BaseTrainer):
             for batch_idx, (data, target) in enumerate(self.valid_data_loader):
                 data, target = data.to(self.device), target.to(self.device)
 
-                output = self.model(data)
+                output, features = self.model(data)
             
                 loss = self.loss(output, target)
 

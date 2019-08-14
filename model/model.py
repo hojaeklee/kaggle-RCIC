@@ -82,7 +82,7 @@ class DenseNet(BaseModel):
         out = F.adaptive_avg_pool2d(out, (1, 1)).view(features.size(0), -1)
         out = self.classifier(out)
         out = F.log_softmax(out, dim = 1)
-        return out
+        return out, features
 
 class ResNet18(BaseModel):
     def __init__(self, num_classes = 1180, num_channels = 6):
