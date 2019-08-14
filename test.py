@@ -11,31 +11,37 @@ import model.metric as module_metric
 import model.model as module_arch
 from parse_config import ConfigParser
 
+# Plate Leak implementation from https://www.kaggle.com/zaharch/keras-model-boosted-with-plates-leak
+train_csv = pd.read_csv("./data/raw/train.csv")
+test_csv = pd.read_csv("./data/raw/test.csv")
+all_test_exp = test_csv.experiment.unique()
+exp_to_group = [3, 1, 0, 0, 0, 0, 2, 2, 3, 0, 0, 3, 1, 0, 0, 0, 2, 3]
+
+plate_groups = np.zeros((1108, 4), int)
+for sirna in range(1108):
+    grp = train_csv.loc[train_csv.sirna==sirna,:].plate.value_counts().index.values
+    assert len(grp) == 3
+    plate_groups[sirna,0:3] = grp
+    plate_groups[sirna,3] = 10 - grp.sum()
+
+def select_plate_group(pp_mult, idx):
+    sub_test = test_csv.loc[test_csv.experiment == all_test_exp[idx], :]
+    assert len(pp_mult) == len(sub_test)
+    mask = np.repeat(plate_groups[np.newaxis, :, exp_to_group[idx]], len(pp_mult), axis = 0) != \
+            np.repeat(sub_test.plate.values[:, np.newaxis], 1108, axis = 1)
+    pp_mult[mask] = 0
+    return pp_mult
 
 def main(config):
     logger = config.get_logger('test')
 
     # setup data_loader instances
-    """
-    data_loader = getattr(module_data, config['data_loader']['type'])(
-        config['data_loader']['args']['data_dir'],
-        batch_size=8,
-        shuffle=False,
-        validation_split=0.0,
-        training=False,
-        num_workers=2
-    )
-    """
     site1_data_loader = RCICDataLoader(data_dir = "./data/raw", batch_size = 8, shuffle = False, validation_split = 0.0, num_workers = 2, training = False, site = 1) 
     site2_data_loader = RCICDataLoader(data_dir = "./data/raw", batch_size = 8, shuffle = False, validation_split = 0.0, num_workers = 2, training = False, site = 2)
 
     # build model architecture
     model = config.initialize('arch', module_arch)
     logger.info(model)
-
-    # get function handles of loss and metrics
-    # loss_fn = getattr(module_loss, config['loss'])
-    # metric_fns = [getattr(module_metric, met) for met in config['metrics']]
 
     logger.info('Loading checkpoint: {} ...'.format(config.resume))
     checkpoint = torch.load(config.resume)
@@ -49,47 +55,37 @@ def main(config):
     model = model.to(device)
     model.eval()
 
-    # total_loss = 0.0
-    # total_metrics = torch.zeros(len(metric_fns))
-
     with torch.no_grad():
-        preds = np.empty(0)
+        # preds = np.empty(0)
+        predicted = []
         for i, data in enumerate(tqdm(zip(site1_data_loader, site2_data_loader))):
             site1_data = data[0][0].to(device)
             site2_data = data[1][0].to(device)
             output1 = model(site1_data)
             output2 = model(site2_data)
-            output = 0.5 * (output1 + output2)
+            output = 0.5 * (torch.exp(output1) + torch.exp(output2))
 
             #
             # save sample images, or do something with output here
             #
-            idx = output.max(dim = -1)[1].cpu().numpy()
-            preds = np.append(preds, idx, axis = 0)
+            # idx = output.max(dim = -1)[1].cpu().numpy()
+            # preds = np.append(preds, idx, axis = 0)
+            predicted.append(output)
 
+    # predicted = np.stack(predicted).squeeze()
+    predicted = torch.cat(predicted)
+    predicted = predicted.cpu().numpy().squeeze()
 
-            """
-            # computing loss, metrics on test set
-            loss = loss_fn(output, target)
-            batch_size = data.shape[0]
-            total_loss += loss.item() * batch_size
-            for i, metric in enumerate(metric_fns):
-                total_metrics[i] += metric(output, target) * batch_size
-            """
-    """        
-    n_samples = len(data_loader.sampler)
-    log = {'loss': total_loss / n_samples}
-    log.update({
-        met.__name__: total_metrics[i].item() / n_samples for i, met in enumerate(metric_fns)
-    })
-    logger.info(log)
-    """
+    for idx in range(len(all_test_exp)):
+        indices = (test_csv.experiment == all_test_exp[idx])
+        preds = predicted[indices, :].copy()
+        preds = select_plate_group(preds, idx)
+        test_csv.loc[indices, 'sirna'] = preds.argmax(1)
 
-    submission = pd.read_csv('./data/raw/test.csv')
-    submission['sirna'] = preds.astype(int)
+    test_csv['sirna'] = test_csv['sirna'].astype(int)
     save_dir = config.save_dir
     save_filename = '{}_submission.csv'.format(os.path.basename(os.path.dirname(config.resume)))
-    submission.to_csv(os.path.join(save_dir, save_filename), index = False, columns = ['id_code', 'sirna'])
+    test_csv.to_csv(os.path.join(save_dir, save_filename), index = False, columns = ['id_code', 'sirna'])
     logger.info("Saved submission file to {}".format(os.path.join(save_dir, save_filename)))
 
 if __name__ == '__main__':
