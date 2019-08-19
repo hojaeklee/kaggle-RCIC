@@ -1,16 +1,16 @@
 {
-    "name": "ArcDenseNet121",
+    "name": "ResNet152",
     "n_gpu": 1,
 
     "arch": {
-        "type": "ArcDenseNet",
+        "type": "ResNet152",
         "args": {}
     },
     "data_loader": {
         "type": "RCICDataLoader",
         "args":{
             "data_dir": "data/raw",
-            "batch_size": 1,
+            "batch_size": 8,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 2
@@ -24,7 +24,7 @@
             "weight_decay": 0
         }
     },
-    "loss": "cross_entropy",
+    "loss": "nll_loss",
     "metrics": [
         "accuracy"
     ],
