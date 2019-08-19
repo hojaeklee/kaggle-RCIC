@@ -1,9 +1,9 @@
 {
-    "name": "DenseNet201",
+    "name": "ResNext101_32x8d",
     "n_gpu": 1,
 
     "arch": {
-        "type": "DenseNet201",
+        "type": "ResNext101_32x8d",
         "args": {}
     },
     "data_loader": {
