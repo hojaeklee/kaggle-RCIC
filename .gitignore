@@ -1,3 +1,7 @@
+# Ignore Great Lakes batch script and outputs
+*.sh
+*.out
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

@@ -19,7 +19,7 @@ class ImagesDS(D.Dataset):
         self.img_dir = img_dir
         self.len = df.shape[0]
         
-        self.transforms = T.Compose([T.Resize(440), T.RandomHorizontalFlip(), T.RandomRotation(90), T.ToTensor()])
+        self.transforms = T.Compose([T.RandomHorizontalFlip(), T.RandomRotation(90), T.ToTensor()])
     
     def _load_img_as_tensor(self, file_name):
         with Image.open(file_name) as img:
