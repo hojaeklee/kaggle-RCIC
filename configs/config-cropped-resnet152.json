@@ -7,7 +7,7 @@
         "args": {}
     },
     "data_loader": {
-        "type": "RCICDataLoaderCropped",
+        "type": "RCICDataLoader",
         "args":{
             "data_dir": "data/cropped",
             "batch_size": 32,

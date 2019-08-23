@@ -55,11 +55,14 @@ class Trainer(BaseTrainer):
 
         total_loss = 0
         total_metrics = np.zeros(len(self.metrics))
-        for batch_idx, (data, target) in enumerate(self.data_loader):
-            data, target = data.to(self.device), target.to(self.device)
+        for batch_idx, (data, target, group) in enumerate(self.data_loader):
+            data, target, group = data.to(self.device), target.to(self.device), group.to(self.device)
 
             self.optimizer.zero_grad()
-            thetas = self.model(data)
+            if self.config
+                
+            else:
+                thetas = self.model(data)
 
             loss = self.loss(thetas, target)
             loss.backward()

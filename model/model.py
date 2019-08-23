@@ -96,7 +96,7 @@ class cropped_plates_ResNet152(BaseModel):
 
         self.model = preloaded
 
-    def forward(self, x):
+    def forward(self, x, groups):
         out = self.model(x)
         out_dict = {}
         out_dict['p1'] = F.log_softmax(self.p1(out), dim=1)

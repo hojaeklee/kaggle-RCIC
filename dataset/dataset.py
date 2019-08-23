@@ -34,9 +34,9 @@ class ImagesDS(D.Dataset):
         paths = [self._get_img_path(index, ch) for ch in self.channels]
         img = torch.cat([self._load_img_as_tensor(img_path) for img_path in paths])
         if self.mode == 'train':
-            return img, int(self.records[index].sirna)
+            return img, int(self.records[index].sirna), int(self.records[index].group)
         else:
-            return img, self.records[index].id_code
+            return img, self.records[index].id_code, int(self.records[index].group)
 
     def __len__(self):
         return self.len

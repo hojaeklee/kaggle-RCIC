@@ -47,7 +47,8 @@ if __name__ == '__main__':
                       help='path to latest checkpoint (default: None)')
     args.add_argument('-d', '--device', default=None, type=str,
                       help='indices of GPUs to enable (default: all)')
-    
+    args.add_argument('-cl', '--cropLoss', default=None, type=str,
+                      help= 'cropping loss argument (opts: None, plates, cells, platesNcells)') 
     # custom cli options to modify configuration from default values given in json file.
     CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
     options = [
@@ -56,4 +57,3 @@ if __name__ == '__main__':
     ]
     config = ConfigParser(args, options)
     main(config)
-
