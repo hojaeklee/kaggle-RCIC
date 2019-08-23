@@ -9,7 +9,8 @@ def main():
             line = line[2:-1]
             image_dir = "../../data/raw/"
             image_dir = os.path.join(image_dir, line) + "/"
-            
+            print(image_dir)
+
             original_cwd = os.getcwd()
 
             os.chdir(image_dir)

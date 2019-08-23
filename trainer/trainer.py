@@ -3,7 +3,7 @@ import torch
 from torchvision.utils import make_grid
 from base import BaseTrainer
 from utils import inf_loop
-from model.model import Arcface
+#from model.model import Arcface
 
 class Trainer(BaseTrainer):
     """

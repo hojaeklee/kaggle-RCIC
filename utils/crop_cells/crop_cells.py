@@ -37,8 +37,8 @@ def crop_cells(sample_id, image_dir, save_dir, min_nuc_size = 100, cropsize = 32
     counts = counts[unique!=background_index]
     unique = unique[unique!=background_index]
     
-
     cells_use = unique > -1
+    #print("num cells:" + str(unique.size))
     for i in range(unique.size):
         mask = (labeled_nuclei == unique[i])
 
@@ -52,46 +52,52 @@ def crop_cells(sample_id, image_dir, save_dir, min_nuc_size = 100, cropsize = 32
         c4 = x + cropsize // 2
 
         if c1 < 0 or c2 >= height or c3 < 0 or c4 >= width:
+            #print('False')
             cells_use[i] = False
+    
+    if True in cells_use:
+        unique = unique[cells_use]
+        counts = counts[cells_use]
+        
+        try:
+            mask = np.isin(labeled_nuclei,unique[counts<=np.quantile(counts,threshold)])
+        except:
+            print(counts, unique, cells_use)
 
-    unique = unique[cells_use]
-    counts = counts[cells_use]
+        mask = 255*mask.astype("uint8")
+        Image.fromarray(mask)
+
+        cells_use = counts<=np.quantile(counts,threshold)
+        unique = unique[cells_use]
+        counts = counts[cells_use]
+
+        for i in range(unique.size):
+            mask = (labeled_nuclei == unique[i])
+
+            y, x = center_of_mass(mask)
+            x = np.int(x)
+            y = np.int(y)
+
+            c1 = y - cropsize // 2
+            c2 = y + cropsize // 2
+            c3 = x - cropsize // 2
+            c4 = x + cropsize // 2
 
 
-    mask = np.isin(labeled_nuclei,unique[counts<=np.quantile(counts,threshold)])
-    mask = 255*mask.astype("uint8")
-    Image. fromarray(mask)
-
-    cells_use = counts<=np.quantile(counts,threshold)
-    unique = unique[cells_use]
-    counts = counts[cells_use]
-
-    for i in range(unique.size):
-        mask = (labeled_nuclei == unique[i])
-
-        y, x = center_of_mass(mask)
-        x = np.int(x)
-        y = np.int(y)
-
-        c1 = y - cropsize // 2
-        c2 = y + cropsize // 2
-        c3 = x - cropsize // 2
-        c4 = x + cropsize // 2
-
-
-
-        for cn, img in channels.items():
-            cropped = img[c1:c2, c3:c4]
-            image_name = save_dir + sample_id + "_cid"  + str(i) + "_" + cn  + "_cx" + str(x) + "_cy" + str(y)+ ".png"
-            
-	    #create path if it doesn't exist
-            if not os.path.exists(os.path.dirname(image_name)):
-                try:
-                    os.makedirs(os.path.dirname(image_name))
-                except OSError as exc: # Guard against race condition
-                    if exc.errno != errno.EEXIST:
-                        raise
-		
-            Image.fromarray(cropped).save(image_name)
+            #print("channel items:" + str(len(channels.items())))
+            #print(channels.items())
+            for cn, img in channels.items():
+                cropped = img[c1:c2, c3:c4]
+                image_name = save_dir + sample_id + "_cid"  + str(i) + "_" + cn  + "_cx" + str(x) + "_cy" + str(y)+ ".png"
+                
+                #create path if it doesn't exist
+                if not os.path.exists(os.path.dirname(image_name)):
+                    try:
+                        os.makedirs(os.path.dirname(image_name))
+                    except OSError as exc: # Guard against race condition
+                        if exc.errno != errno.EEXIST:
+                            raise
+                    
+                Image.fromarray(cropped).save(image_name)
     return
 
