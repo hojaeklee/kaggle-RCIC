@@ -59,10 +59,7 @@ class Trainer(BaseTrainer):
             data, target, group = data.to(self.device), target.to(self.device), group.to(self.device)
 
             self.optimizer.zero_grad()
-            if self.config
-                
-            else:
-                thetas = self.model(data)
+            thetas = self.model(data)
 
             loss = self.loss(thetas, target)
             loss.backward()

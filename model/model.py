@@ -124,3 +124,5 @@ class ResNext101_32x8d(BaseModel):
         out = F.log_softmax(out, dim = 1)
         return out
 
+=======
+>>>>>>> 2911e0945677784f470277d8c5159fc72d46da8e
