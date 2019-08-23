@@ -36,7 +36,7 @@ class ResNet50(BaseModel):
     
     def forward(self, x):
         out = self.model(x)
-        out = F.log_softmax(x)
+        out = F.log_softmax(out, dim = 1)
         return out
 
 class DenseNet201(BaseModel):
