@@ -3,7 +3,6 @@ import torch
 from torchvision.utils import make_grid
 from base import BaseTrainer
 from utils import inf_loop
-#from model.model import Arcface
 
 class Trainer(BaseTrainer):
     """
@@ -28,7 +27,6 @@ class Trainer(BaseTrainer):
         self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = lr_scheduler
         self.log_step = int(np.sqrt(data_loader.batch_size))
-        self.head = Arcface(embedding_size = 512)
 
     def _eval_metrics(self, output, target):
         acc_metrics = np.zeros(len(self.metrics))

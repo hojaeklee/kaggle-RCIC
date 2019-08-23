@@ -14,13 +14,14 @@ class DenseNet(BaseModel):
         self.features.conv0 = nn.Conv2d(num_channels, 64, 7, 2, 3)
         self.classifier = nn.Linear(1024, num_classes, bias = True)
         del preloaded
-
+    
+    def forward(self, x):
         features = self.features(x)
         out = F.relu(features, inplace = True)
         out = F.adaptive_avg_pool2d(out, (1, 1)).view(features.size(0), -1)
         out = self.classifier(out)
         out = F.log_softmax(out, dim = 1)
-        return out, features
+        return out
 
 class ResNet50(BaseModel):
     def __init__(self, num_classes = 1108, num_channels = 6):
@@ -36,7 +37,7 @@ class ResNet50(BaseModel):
     
     def forward(self, x):
         out = self.model(x)
-        out = F.log_softmax(x)
+        out = F.log_softmax(out, dim = 1)
         return out
 
 class DenseNet201(BaseModel):
