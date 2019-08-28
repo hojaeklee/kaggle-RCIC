@@ -11,11 +11,11 @@ class Trainer(BaseTrainer):
     Note:
         Inherited from BaseTrainer.
     """
-    def __init__(self, model, loss, metrics, optimizer, config, data_loader,
-                 valid_data_loader=None, lr_scheduler=None, len_epoch=None):
+    def __init__(self, model, loss, metrics, optimizer, config, data_loader, valid_data_loader=None, lr_scheduler=None, len_epoch=None, is_cropped=False):
         super().__init__(model, loss, metrics, optimizer, config)
         self.config = config
         self.data_loader = data_loader
+        self.is_cropped = is_cropped
         if len_epoch is None:
             # epoch-based training
             self.len_epoch = len(self.data_loader)
@@ -54,24 +54,53 @@ class Trainer(BaseTrainer):
         self.model.train()
 
         total_loss = 0
-        total_metrics = np.zeros(len(self.metrics))
+        if self.is_cropped:
+            total_metrics = np.zeros((len(self.metrics), 4))
+        else:
+            total_metrics = np.zeros(len(self.metrics))
         for batch_idx, (data, target, group) in enumerate(self.data_loader):
             data, target, group = data.to(self.device), target.to(self.device), group.to(self.device)
 
             self.optimizer.zero_grad()
-            thetas = self.model(data)
-
-            loss = self.loss(thetas, target)
+            
+            #do cropped loss if necessary otherwise do normal loss
+            if self.is_cropped:
+                thetas1, thetas2, thetas3, thetas4 = self.model(data, group)
+                loss = 0.0
+                if 1 in group:
+                    loss += self.loss(thetas1, target[group==1])
+                if 2 in group:
+                    loss += self.loss(thetas2, target[group==2])
+                if 3 in group:
+                    loss += self.loss(thetas3, target[group==3])
+                if 4 in group: 
+                    loss += self.loss(thetas4, target[group==4])
+            else:
+                thetas = self.model(data)
+                loss = self.loss(thetas, target)
+            
             loss.backward()
             self.optimizer.step()
 
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.writer.add_scalar('loss', loss.item())
             total_loss += loss.item()
-            total_metrics += self._eval_metrics(thetas, target)
+            if self.is_cropped:
+                if 1 in group:
+                    total_metrics[:,0] += self._eval_metrics(thetas1, target[group==1])
+                if 2 in group:
+                    total_metrics[:,1] += self._eval_metrics(thetas2, target[group==2])
+                if 3 in group:
+                    total_metrics[:,2] += self._eval_metrics(thetas3, target[group==3])
+                if 4 in group:    
+                    total_metrics[:,3] += self._eval_metrics(thetas4, target[group==4])
+            else:
+                total_metrics += self._eval_metrics(thetas, target)
             
-
-            del data, target, thetas
+            if self.is_cropped:
+                del data, target, thetas1, thetas2, thetas3, thetas4
+            else:
+                del data, target, thetas
 
             if batch_idx % self.log_step == 0:
                 self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
@@ -109,21 +138,49 @@ class Trainer(BaseTrainer):
         """
         self.model.eval()
         total_val_loss = 0
-        total_val_metrics = np.zeros(len(self.metrics))
+        if self.is_cropped:
+            total_val_metrics = np.zeros((len(self.metrics), 4))
+        else:
+            total_val_metrics = np.zeros(len(self.metrics))
+
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-                data, target = data.to(self.device), target.to(self.device)
+                data, target, group = data.to(self.device), target.to(self.device), group.to(self.device)
 
-                thetas = self.model(data)
-                # thetas = self.head(embeddings, labels)
+                self.optimizer.zero_grad()
+                
+                #do cropped loss if necessary otherwise do normal loss
+                if self.is_cropped:
+                    thetas1, thetas2, thetas3, thetas4 = self.model(data, group)
+                    loss = 0.0
+                    if 1 in group:
+                        loss += self.loss(thetas1, target[group==1])
+                    if 2 in group:
+                        loss += self.loss(thetas2, target[group==2])
+                    if 3 in group:
+                        loss += self.loss(thetas3, target[group==3])
+                    if 4 in group: 
+                        loss += self.loss(thetas4, target[group==4])
+                else:
+                    thetas = self.model(data)
+                    loss = self.loss(thetas, target)
             
-                loss = self.loss(thetas, target)
 
                 self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
                 self.writer.add_scalar('loss', loss.item())
+                
                 total_val_loss += loss.item()
-                total_val_metrics += self._eval_metrics(thetas, target)
-                # self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
+                if self.is_cropped:
+                    if 1 in group:
+                        total_val_metrics[:,0] += self._eval_metrics(thetas1, target[group==1])
+                    if 2 in group:
+                        total_val_metrics[:,1] += self._eval_metrics(thetas2, target[group==2])
+                    if 3 in group:
+                        total_val_metrics[:,2] += self._eval_metrics(thetas3, target[group==3])
+                    if 4 in group:    
+                        total_val_metrics[:,3] += self._eval_metrics(thetas4, target[group==4])
+                else:
+                    total_val_metrics += self._eval_metrics(thetas, target)
 
         # add histogram of model parameters to the tensorboard
         for name, p in self.model.named_parameters():

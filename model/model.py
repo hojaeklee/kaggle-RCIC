@@ -78,7 +78,7 @@ class ResNet152(BaseModel):
 
 
 class cropped_plates_ResNet152(BaseModel):
-    def __init__(self, num_plate_classes = 277, num_channels = 6):
+    def __init__(self, num_classes = 1108, num_plate_classes = 277, num_channels = 6):
         super().__init__()
         preloaded = torchvision.models.resnet152(pretrained = True)
         trained_kernel = preloaded.conv1.weight
@@ -92,18 +92,25 @@ class cropped_plates_ResNet152(BaseModel):
         self.p1 = nn.Linear(num_ftrs, num_plate_classes) 
         self.p2 = nn.Linear(num_ftrs, num_plate_classes) 
         self.p3 = nn.Linear(num_ftrs, num_plate_classes) 
-        self.p4 = nn.Linear(num_ftrs, num_plate_classes) 
+        self.p4 = nn.Linear(num_ftrs, num_plate_classes)
 
         self.model = preloaded
+        self.num_classes = num_classes
+        self.num_plate_classes = num_plate_classes
 
     def forward(self, x, groups):
         out = self.model(x)
-        out_dict = {}
-        out_dict['p1'] = F.log_softmax(self.p1(out), dim=1)
-        out_dict['p2'] = F.log_softmax(self.p2(out), dim=1)
-        out_dict['p3'] = F.log_softmax(self.p3(out), dim=1)
-        out_dict['p4'] = F.log_softmax(self.p4(out), dim=1)
-        return out_dict
+        
+        res1 = F.log_softmax(self.p1(out[groups==1, :]), dim=1)
+        res2 = F.log_softmax(self.p2(out[groups==2, :]), dim=1)
+        res3 = F.log_softmax(self.p3(out[groups==3, :]), dim=1)
+        res4 = F.log_softmax(self.p4(out[groups==4, :]), dim=1)
+        #result[groups==1, :] = F.log_softmax(self.p1(out[groups==1, :]), dim=1)
+        #result[groups==2, :] = F.log_softmax(self.p2(out[groups==2, :]), dim=1)
+        #result[groups==3, :] = F.log_softmax(self.p3(out[groups==3, :]), dim=1)
+        #result[groups==4, :] = F.log_softmax(self.p4(out[groups==4, :]), dim=1)
+
+        return res1, res2, res3, res4
 
 class ResNext101_32x8d(BaseModel):
     def __init__(self, num_classes = 1108, num_channels = 6):
@@ -124,5 +131,3 @@ class ResNext101_32x8d(BaseModel):
         out = F.log_softmax(out, dim = 1)
         return out
 
-=======
->>>>>>> 2911e0945677784f470277d8c5159fc72d46da8e

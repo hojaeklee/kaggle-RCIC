@@ -35,6 +35,47 @@ def main():
 
         #write new csv
         train.to_csv(path_or_buf="train.csv", index=False)
+    
+    if "group_target" not in train.columns: 
+        #use an experiment that has all siRNAs
+        exp = "HEPG2-03"
+        train_exp = train.groupby("experiment").get_group(exp)
+        
+        #add group columnn to dataframe
+        train["group_target"] = 0
+        
+        #get lists of sirna by group
+        p1 = train_exp.groupby("plate").get_group(1)
+        s1 = list(p1["sirna"])
+        gt1 = np.argsort(np.argsort(s1))
+        p2 = train_exp.groupby("plate").get_group(2)
+        s2 = list(p2["sirna"])
+        gt2 = np.argsort(np.argsort(s2))
+        p3 = train_exp.groupby("plate").get_group(3)
+        s3 = list(p3["sirna"])
+        gt3 = np.argsort(np.argsort(s3))
+        p4 = train_exp.groupby("plate").get_group(4)
+        s4 = list(p4["sirna"])
+        gt4 = np.argsort(np.argsort(s4))
+        
+        ordered_gt = np.zeros(1108)
+        for idx, each in enumerate(s1):
+            ordered_gt[each] = gt1[idx]
+        for idx, each in enumerate(s2):
+            ordered_gt[each] = gt1[idx]
+        for idx, each in enumerate(s3):
+            ordered_gt[each] = gt1[idx]
+        for idx, each in enumerate(s4):
+            ordered_gt[each] = gt1[idx]
+        
+        #for idx, each in enumerate(train['sirna']):
+        #    train.loc[idx, "group_target"] = ordered_gt[each]
+        for i in range(1108):
+            train.loc[train["sirna"]==i, "group_target"] = int(ordered_gt[i])
+
+        #write new csv
+        train.to_csv(path_or_buf="train.csv", index=False)
+
 
 
 if __name__ == '__main__':

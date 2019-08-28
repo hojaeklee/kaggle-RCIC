@@ -11,6 +11,7 @@ site2_ncells = []
 
 for index in range(len(records)):
     record = records[index]
+    print(record)
     os.chdir(original_cwd)
     os.chdir(f'cropped/train/{record.experiment}/Plate{record.plate}/')
     

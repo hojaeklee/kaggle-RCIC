@@ -9,9 +9,9 @@ from parse_config import ConfigParser
 from trainer import Trainer
 
 
-def main(config):
+def main(config, is_cropped):
     logger = config.get_logger('train')
-
+    
     # setup data_loader instances
     data_loader = config.initialize('data_loader', module_data)
     valid_data_loader = data_loader.split_validation()
@@ -34,7 +34,8 @@ def main(config):
                       config=config,
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
-                      lr_scheduler=lr_scheduler)
+                      lr_scheduler=lr_scheduler,
+                      is_cropped=is_cropped)
 
     trainer.train()
 
@@ -47,8 +48,8 @@ if __name__ == '__main__':
                       help='path to latest checkpoint (default: None)')
     args.add_argument('-d', '--device', default=None, type=str,
                       help='indices of GPUs to enable (default: all)')
-    args.add_argument('-cl', '--cropLoss', default=None, type=str,
-                      help= 'cropping loss argument (opts: None, plates, cells, platesNcells)') 
+    args.add_argument('-cr', '--is_cropped', dest= 'is_cropped', default=False, action='store_true',
+                      help= 'cropping loss argument (opts: True, False)') 
     # custom cli options to modify configuration from default values given in json file.
     CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
     options = [
@@ -56,4 +57,5 @@ if __name__ == '__main__':
         CustomArgs(['--bs', '--batch_size'], type=int, target=('data_loader', 'args', 'batch_size'))
     ]
     config = ConfigParser(args, options)
-    main(config)
+    arguments = args.parse_args()
+    main(config, arguments.is_cropped)

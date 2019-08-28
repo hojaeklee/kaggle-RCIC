@@ -1,3 +1,11 @@
+./test/HUVEC-24/Plate2
+./test/HUVEC-24/Plate3
+./test/HUVEC-24/Plate1
+./test/HUVEC-24/Plate4
+./test/RPE-08/Plate2
+./test/RPE-08/Plate3
+./test/RPE-08/Plate1
+./test/RPE-08/Plate4
 ./test/HUVEC-20/Plate2
 ./test/HUVEC-20/Plate3
 ./test/HUVEC-20/Plate1
