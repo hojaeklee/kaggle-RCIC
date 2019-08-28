@@ -46,10 +46,14 @@ class ImagesDS(D.Dataset):
         if self.is_cropped:
             s1n = self.records[index].site1_ncells 
             s2n = self.records[index].site2_ncells
-            if self.site == 1:
+            if self.site == 1 and s1n>0:
                 cid = np.random.randint(0, s1n)
-            else:
+            elif self.site == 2 and s2n>0:
                 cid = np.random.randint(0, s2n)
+            else:
+                #in case this example has NO cells just grab the next in line
+                index += 1
+                cid = 0
             paths = [self._get_img_path(index, ch, cid) for ch in self.channels]
             img = torch.cat([self._load_img_as_tensor(img_path) for img_path in paths])
             return img, int(self.records[index].group_target), int(self.records[index].group)

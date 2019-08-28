@@ -6,6 +6,13 @@ from base import BaseModel
 import torchvision
 from torchvision import models
 
+class Identity(nn.Module):
+    def __init__(self):
+        super(Identity, self).__init__()
+                            
+    def forward(self, x):
+        return x
+
 class DenseNet(BaseModel):
     def __init__(self, num_classes = 1108, num_channels = 6):
         super().__init__()
@@ -88,7 +95,7 @@ class cropped_plates_ResNet152(BaseModel):
         preloaded.conv1 = new_conv
         num_ftrs = preloaded.fc.in_features
         #just an extra linear layer for ease of implementation
-        preloaded.fc = nn.Linear(num_ftrs, num_ftrs) 
+        preloaded.fc = Identity() 
         self.p1 = nn.Linear(num_ftrs, num_plate_classes) 
         self.p2 = nn.Linear(num_ftrs, num_plate_classes) 
         self.p3 = nn.Linear(num_ftrs, num_plate_classes) 
