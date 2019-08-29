@@ -144,7 +144,7 @@ class Trainer(BaseTrainer):
             total_val_metrics = np.zeros(len(self.metrics))
 
         with torch.no_grad():
-            for batch_idx, (data, target) in enumerate(self.valid_data_loader):
+            for batch_idx, (data, target, group) in enumerate(self.valid_data_loader):
                 data, target, group = data.to(self.device), target.to(self.device), group.to(self.device)
 
                 self.optimizer.zero_grad()
