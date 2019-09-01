@@ -11,11 +11,12 @@ class Trainer(BaseTrainer):
     Note:
         Inherited from BaseTrainer.
     """
-    def __init__(self, model, loss, metrics, optimizer, config, data_loader, valid_data_loader=None, lr_scheduler=None, len_epoch=None, is_cropped=False):
+    def __init__(self, model, loss, metrics, optimizer, config, data_loader, valid_data_loader=None, lr_scheduler=None, len_epoch=None, is_cropped=False, four_plates=False):
         super().__init__(model, loss, metrics, optimizer, config)
         self.config = config
         self.data_loader = data_loader
         self.is_cropped = is_cropped
+        self.four_plates = four_plates
         if len_epoch is None:
             # epoch-based training
             self.len_epoch = len(self.data_loader)
@@ -54,7 +55,7 @@ class Trainer(BaseTrainer):
         self.model.train()
 
         total_loss = 0
-        if self.is_cropped:
+        if self.four_plates:
             total_metrics = np.zeros((len(self.metrics), 4))
         else:
             total_metrics = np.zeros(len(self.metrics))
@@ -64,7 +65,7 @@ class Trainer(BaseTrainer):
             self.optimizer.zero_grad()
             
             #do cropped loss if necessary otherwise do normal loss
-            if self.is_cropped:
+            if self.four_plates:
                 thetas1, thetas2, thetas3, thetas4 = self.model(data, group)
                 loss = 0.0
                 if 1 in group:
@@ -85,7 +86,7 @@ class Trainer(BaseTrainer):
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.writer.add_scalar('loss', loss.item())
             total_loss += loss.item()
-            if self.is_cropped:
+            if self.four_plates:
                 if 1 in group:
                     total_metrics[:,0] += self._eval_metrics(thetas1, target[group==1])
                 if 2 in group:
@@ -97,7 +98,7 @@ class Trainer(BaseTrainer):
             else:
                 total_metrics += self._eval_metrics(thetas, target)
             
-            if self.is_cropped:
+            if self.four_plates:
                 del data, target, thetas1, thetas2, thetas3, thetas4
             else:
                 del data, target, thetas
@@ -138,7 +139,7 @@ class Trainer(BaseTrainer):
         """
         self.model.eval()
         total_val_loss = 0
-        if self.is_cropped:
+        if self.four_plates:
             total_val_metrics = np.zeros((len(self.metrics), 4))
         else:
             total_val_metrics = np.zeros(len(self.metrics))
@@ -150,7 +151,7 @@ class Trainer(BaseTrainer):
                 self.optimizer.zero_grad()
                 
                 #do cropped loss if necessary otherwise do normal loss
-                if self.is_cropped:
+                if self.four_plates:
                     thetas1, thetas2, thetas3, thetas4 = self.model(data, group)
                     loss = 0.0
                     if 1 in group:
@@ -170,7 +171,7 @@ class Trainer(BaseTrainer):
                 self.writer.add_scalar('loss', loss.item())
                 
                 total_val_loss += loss.item()
-                if self.is_cropped:
+                if self.four_plates:
                     if 1 in group:
                         total_val_metrics[:,0] += self._eval_metrics(thetas1, target[group==1])
                     if 2 in group:

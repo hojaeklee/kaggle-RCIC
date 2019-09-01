@@ -9,7 +9,7 @@ from parse_config import ConfigParser
 from trainer import Trainer
 
 
-def main(config, is_cropped):
+def main(config, is_cropped, four_plates):
     logger = config.get_logger('train')
     
     # setup data_loader instances
@@ -35,7 +35,8 @@ def main(config, is_cropped):
                       data_loader=data_loader,
                       valid_data_loader=valid_data_loader,
                       lr_scheduler=lr_scheduler,
-                      is_cropped=is_cropped)
+                      is_cropped=is_cropped,
+                      four_plates=four_plates)
 
     trainer.train()
 
@@ -49,7 +50,9 @@ if __name__ == '__main__':
     args.add_argument('-d', '--device', default=None, type=str,
                       help='indices of GPUs to enable (default: all)')
     args.add_argument('-cr', '--is_cropped', dest= 'is_cropped', default=False, action='store_true',
-                      help= 'cropping loss argument (opts: True, False)') 
+                      help= ' running on cropped data (opts: True, False)') 
+    args.add_argument('-fp', '--four_plates', dest= 'four_plates', default=False, action='store_true',
+                      help= ' use plate specific loss (opts: True, False)') 
     # custom cli options to modify configuration from default values given in json file.
     CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
     options = [
@@ -58,4 +61,4 @@ if __name__ == '__main__':
     ]
     config = ConfigParser(args, options)
     arguments = args.parse_args()
-    main(config, arguments.is_cropped)
+    main(config, arguments.is_cropped, arguments.four_plates)
