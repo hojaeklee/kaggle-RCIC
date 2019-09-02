@@ -12,13 +12,22 @@ class RCICDataLoader(BaseDataLoader):
         self.is_cropped = is_cropped
         self.four_plates = four_plates
         if training:
-            self.dataset1 = ImagesDS(os.path.join(self.data_dir, "train.csv"), self.data_dir, site = 1, is_cropped = self.is_cropped)
-            self.dataset2 = ImagesDS(os.path.join(self.data_dir, "train.csv"), self.data_dir, site = 2, is_cropped = self.is_cropped)
-            self.dataset = torch.utils.data.ConcatDataset([self.dataset1, self.dataset2])
+            self.dataset1 = ImagesDS(os.path.join(self.data_dir, "train.csv"), 
+                                     self.data_dir, site = 1, 
+                                     is_cropped = self.is_cropped)
+            self.dataset2 = ImagesDS(os.path.join(self.data_dir, "train.csv"), 
+                                     self.data_dir, site = 2, 
+                                     is_cropped = self.is_cropped)
+            self.dataset = torch.utils.data.ConcatDataset([self.dataset1, 
+                                                           self.dataset2])
         else:
             if neg_ctrl:
-                self.dataset = ImagesDS(os.path.join(self.data_dir, "train_negative_controls.csv"), self.data_dir, site = site)
+                self.dataset = ImagesDS(os.path.join(self.data_dir, 
+                                                     "train_negative_controls.csv"), 
+                                        self.data_dir, site = site)
             else:
-                self.dataset = ImagesDS(os.path.join(self.data_dir, "test.csv"), self.data_dir, site = site, mode = 'test', is_cropped = self.is_cropped)
+                self.dataset = ImagesDS(os.path.join(self.data_dir, "test.csv"),
+                                        self.data_dir, site = site, mode = 'test', 
+                                        is_cropped = self.is_cropped)
 
         super().__init__(self.dataset, batch_size, shuffle, validation_split, num_workers)

@@ -32,13 +32,25 @@ def select_plate_group(pp_mult, idx):
     pp_mult[mask] = 0
     return pp_mult
 
-def main(config):
+def main(config, is_cropped=False, four_plates=False):
     logger = config.get_logger('test')
 
     # setup data_loader instances
-    site1_data_loader = RCICDataLoader(data_dir = "./data/raw", batch_size = 8, shuffle = False, validation_split = 0.0, num_workers = 2, training = False, site = 1) 
-    site2_data_loader = RCICDataLoader(data_dir = "./data/raw", batch_size = 8, shuffle = False, validation_split = 0.0, num_workers = 2, training = False, site = 2)
-
+    if is_cropped:
+        data_dir = "./data/cropped"
+        batch_size = 1
+    else:
+        data_dir = "./data/raw"
+        batch_size = 8
+    site1_data_loader = RCICDataLoader(data_dir = data_dir, batch_size = batch_size, 
+                                       shuffle = False, validation_split = 0.0, 
+                                       num_workers = 12, training = False, site = 1,
+                                       is_cropped=is_cropped, four_plates=four_plates) 
+    site2_data_loader = RCICDataLoader(data_dir = data_dir, batch_size = batch_size, 
+                                       shuffle = False, validation_split = 0.0, 
+                                       num_workers = 12, training = False, site = 2, 
+                                       is_cropped=is_cropped)
+    
     # build model architecture
     model = config.initialize('arch', module_arch)
     logger.info(model)
@@ -63,7 +75,10 @@ def main(config):
             site2_data = data[1][0].to(device)
             output1 = model(site1_data)
             output2 = model(site2_data)
-            output = 0.5 * (torch.exp(output1) + torch.exp(output2))
+            if is_cropped:
+                output = (torch.exp(output1) + torch.exp(output2)).sum(dim=0)
+            else:
+                output = (torch.exp(output1) + torch.exp(output2))
 
             #
             # save sample images, or do something with output here
@@ -95,6 +110,10 @@ if __name__ == '__main__':
                       help='path to latest checkpoint (default: None)')
     args.add_argument('-d', '--device', default=None, type=str,
                       help='indices of GPUs to enable (default: all)')
-
+    args.add_argument('-cr', '--is_cropped', dest= 'is_cropped', default=False, action='store_true',
+                      help= ' running on cropped data (opts: True, False)') 
+    args.add_argument('-fp', '--four_plates', dest= 'four_plates', default=False, action='store_true',
+                      help= ' use plate specific loss (opts: True, False)') 
     config = ConfigParser(args)
-    main(config)
+    arguments = args.parse_args()
+    main(config, arguments.is_cropped, arguments.four_plates)
