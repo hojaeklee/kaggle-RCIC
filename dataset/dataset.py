@@ -68,7 +68,7 @@ class ImagesDS(D.Dataset):
                     img = torch.cat([self._load_img_as_tensor(img_path) for 
                                      img_path in paths])
                     images = torch.cat(images, img[None,:,:,:])
-                return img, int(self.records[index].id_code), int(self.records[index].group)
+                return images, int(self.records[index].id_code), int(self.records[index].group)
         elif self.four_plates:
             s1n = self.records[index].site1_ncells 
             s2n = self.records[index].site2_ncells
