@@ -64,6 +64,7 @@ def main(config, is_cropped=False, four_plates=False):
 
     # prepare model for testing
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    print(device)
     model = model.to(device)
     model.eval()
 
@@ -71,12 +72,12 @@ def main(config, is_cropped=False, four_plates=False):
         # preds = np.empty(0)
         predicted = []
         for i, data in enumerate(tqdm(zip(site1_data_loader, site2_data_loader))):
-            site1_data = data[0][0].to(device)
-            site2_data = data[1][0].to(device)
+            site1_data = data[0][0].view(-1,6,64,64).to(device)
+            site2_data = data[1][0].view(-1,6,64,64).to(device)
             output1 = model(site1_data)
             output2 = model(site2_data)
             if is_cropped:
-                output = (torch.exp(output1) + torch.exp(output2)).sum(dim=0)
+                output = torch.exp(output1).sum(dim=0) + torch.exp(output2).sum(dim=0)
             else:
                 output = (torch.exp(output1) + torch.exp(output2))
 

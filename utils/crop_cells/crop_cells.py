@@ -70,7 +70,12 @@ def crop_cells(sample_id, image_dir, save_dir, min_nuc_size = 100, cropsize = 32
         cells_use = counts<=np.quantile(counts,threshold)
         unique = unique[cells_use]
         counts = counts[cells_use]
-
+        
+        if unique.size == 0:
+            #if we don't find any cells, lower the criterea for a good cell and try again
+            crop_cells(sample_id, image_dir, save_dir, min_nuc_size = int(0.5*min_nuc_size), cropsize = 32, threshold = 0.5*threshold)
+            return
+        
         for i in range(unique.size):
             mask = (labeled_nuclei == unique[i])
 

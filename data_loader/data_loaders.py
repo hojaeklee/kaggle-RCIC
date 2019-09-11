@@ -14,10 +14,12 @@ class RCICDataLoader(BaseDataLoader):
         if training:
             self.dataset1 = ImagesDS(os.path.join(self.data_dir, "train.csv"), 
                                      self.data_dir, site = 1, 
-                                     is_cropped = self.is_cropped)
+                                     is_cropped = self.is_cropped,
+                                     four_plates = self.four_plates)
             self.dataset2 = ImagesDS(os.path.join(self.data_dir, "train.csv"), 
                                      self.data_dir, site = 2, 
-                                     is_cropped = self.is_cropped)
+                                     is_cropped = self.is_cropped,
+                                     four_plates = self.four_plates)
             self.dataset = torch.utils.data.ConcatDataset([self.dataset1, 
                                                            self.dataset2])
         else:
@@ -28,6 +30,7 @@ class RCICDataLoader(BaseDataLoader):
             else:
                 self.dataset = ImagesDS(os.path.join(self.data_dir, "test.csv"),
                                         self.data_dir, site = site, mode = 'test', 
-                                        is_cropped = self.is_cropped)
+                                        is_cropped = self.is_cropped,
+                                        four_plates = self.four_plates)
 
         super().__init__(self.dataset, batch_size, shuffle, validation_split, num_workers)

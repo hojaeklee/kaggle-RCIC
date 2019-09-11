@@ -84,7 +84,7 @@ class ResNet152(BaseModel):
         return out
 
 
-class cropped_plates_ResNet152(BaseModel):
+class plates_ResNet152(BaseModel):
     def __init__(self, num_classes = 1108, num_plate_classes = 277, num_channels = 6):
         super().__init__()
         preloaded = torchvision.models.resnet152(pretrained = True)

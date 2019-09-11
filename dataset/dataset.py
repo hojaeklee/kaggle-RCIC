@@ -11,7 +11,7 @@ import torchvision
 from torchvision import transforms as T
 
 class ImagesDS(D.Dataset):
-    def __init__(self, csv_file, img_dir, mode='train', site=1, channels=[1,2,3,4,5,6], is_cropped = False):
+    def __init__(self, csv_file, img_dir, mode='train', site=1, channels=[1,2,3,4,5,6], is_cropped = False, four_plates = False):
         
         df = pd.read_csv(csv_file)
         self.records = df.to_records(index=False)
@@ -21,6 +21,7 @@ class ImagesDS(D.Dataset):
         self.img_dir = img_dir
         self.len = df.shape[0]
         self.is_cropped = is_cropped
+        self.four_plates = four_plates
         
         self.transforms = T.Compose([T.RandomHorizontalFlip(), T.RandomRotation(90), T.ToTensor()])
     
@@ -56,6 +57,7 @@ class ImagesDS(D.Dataset):
                 #in case this example has NO cells just grab the next in line
                 index += 1
                 cid = 0
+                sn = self.records[index].site1_ncells
             if self.mode == 'train':
                 paths = [self._get_img_path(index, ch, cid) for ch in self.channels]
                 img = torch.cat([self._load_img_as_tensor(img_path) for img_path in paths])
@@ -67,42 +69,23 @@ class ImagesDS(D.Dataset):
                              self.channels]
                     img = torch.cat([self._load_img_as_tensor(img_path) for 
                                      img_path in paths])
-                    images = torch.cat(images, img[None,:,:,:])
-                return images, int(self.records[index].id_code), int(self.records[index].group)
+                    images = torch.cat((images, img[None,:,:,:]))
+                return images, self.records[index].id_code
         elif self.four_plates:
-            s1n = self.records[index].site1_ncells 
-            s2n = self.records[index].site2_ncells
-            if self.site == 1 and s1n>0:
-                sn = s1n
-                cid = np.random.randint(0, s1n)
-            elif self.site == 2 and s2n>0:
-                sn = s2n
-                cid = np.random.randint(0, s2n)
-            else:
-                #in case this example has NO cells just grab the next in line
-                index += 1
-                cid = 0
+            paths = [self._get_img_path(index, ch) for ch in self.channels]
+            img = torch.cat([self._load_img_as_tensor(img_path) for img_path in paths])
             if self.mode == 'train':
-                paths = [self._get_img_path(index, ch, cid) for ch in self.channels]
-                img = torch.cat([self._load_img_as_tensor(img_path) for img_path in paths])
                 return img, int(self.records[index].group_target), int(self.records[index].group)
             else:
-                images = torch.Tensor()
-                for cid in range(sn):
-                    paths = [self._get_img_path(index, ch, cid) for ch in 
-                             self.channels]
-                    img = torch.cat([self._load_img_as_tensor(img_path) for 
-                                     img_path in paths])
-                    images = torch.cat(images, img[None,:,:,:])
-                return img, int(self.records[index].id_code), int(self.records[index].group)
-                
+                return img, self.records[index].id_code, int(self.records[index].group)
+            
         else:
             paths = [self._get_img_path(index, ch) for ch in self.channels]
-        img = torch.cat([self._load_img_as_tensor(img_path) for img_path in paths])
-        if self.mode == 'train':
-            return img, int(self.records[index].sirna), int(self.records[index].group)
-        else:
-            return img, self.records[index].id_code, int(self.records[index].group)
+            img = torch.cat([self._load_img_as_tensor(img_path) for img_path in paths])
+            if self.mode == 'train':
+                return img, int(self.records[index].sirna), int(self.records[index].group)
+            else:
+                return img, self.records[index].id_code, int(self.records[index].group)
 
     def __len__(self):
         return self.len
