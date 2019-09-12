@@ -83,6 +83,28 @@ class ResNet152(BaseModel):
         out = F.log_softmax(out, dim = 1)
         return out
 
+class arc_ResNet152(BaseModel):
+    def __init__(self, num_classes = 1108, num_channels = 6):
+        super().__init__()
+        preloaded = torchvision.models.resnet152(pretrained = True)
+        trained_kernel = preloaded.conv1.weight
+        new_conv = nn.Conv2d(num_channels, 64, 7, 2, 3)
+        with torch.no_grad():
+            new_conv.weight[:,:] = torch.stack([torch.mean(trained_kernel, 1)] * 6, dim = 1)
+        preloaded.conv1 = new_conv
+        num_ftrs = preloaded.fc.in_features
+        preloaded.fc = nn.Identity()
+        self.fc = nn.Linear(num_ftrs, num_classes)
+
+        self.model = preloaded
+
+    def forward(self, x):
+        out1 = self.model(x)
+        #compute angles by normalizing and taking inner product
+        #with torch.no_grad():
+        #    self.fc.weight.div_(torch.norm(self.fc.weight, dim=1, keepdim=True))
+        #out2 = self.fc(out1).div_(torch.norm(out1, dim=1, keepdim=True))
+        return F.linear(F.normalize(out1), F.normalize(self.fc.weight))
 
 class plates_ResNet152(BaseModel):
     def __init__(self, num_classes = 1108, num_plate_classes = 277, num_channels = 6):
