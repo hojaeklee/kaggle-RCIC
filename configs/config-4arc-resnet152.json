@@ -1,9 +1,9 @@
 {
-    "name": "arc_ResNet152",
+    "name": "plates_arc_ResNet152",
     "n_gpu": 1,
 
     "arch": {
-        "type": "arc_ResNet152",
+        "type": "plates_arc_ResNet152",
         "args": {}
     },
     "data_loader": {
@@ -15,7 +15,7 @@
             "validation_split": 0.1,
             "num_workers": 12,
 	    "is_cropped": false,
-	    "four_plates":false
+	    "four_plates": true
         }
     },
     "optimizer": {
