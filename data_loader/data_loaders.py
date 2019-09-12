@@ -7,7 +7,7 @@ class RCICDataLoader(BaseDataLoader):
     """
     Loads ImageDS Dataset
     """
-    def __init__(self, data_dir, batch_size, shuffle = True, validation_split = 0.0, num_workers = 1, neg_ctrl = False, training = True, site = 1, is_cropped = False, four_plates = False):
+    def __init__(self, data_dir, batch_size, shuffle = True, drop_last=True, validation_split = 0.0, num_workers = 1, neg_ctrl = False, training = True, site = 1, is_cropped = False, four_plates = False):
         self.data_dir = data_dir
         self.is_cropped = is_cropped
         self.four_plates = four_plates
