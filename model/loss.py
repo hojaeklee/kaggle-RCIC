@@ -36,7 +36,6 @@ def ArcFaceLoss(net_output, labels, m=0.5, s=64, easy_margin=False, gamma=1):
     one_hot.scatter_(1, labels.view(-1,1).long(), 1)
     output = (one_hot * phi) + ((1.0 - one_hot) * cosine)
     output *= s
-    print(output.shape, labels.shape)
     loss_func = nn.CrossEntropyLoss()
     loss1 = loss_func(output, labels)
     loss2 = loss_func(cosine, labels)
