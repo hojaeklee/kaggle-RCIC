@@ -1,21 +1,21 @@
 {
-    "name": "arc_ResNet152",
-    "n_gpu": 2,
+    "name": "plates_arc_ResNet152",
+    "n_gpu": 1,
 
     "arch": {
-        "type": "arc_ResNet152",
+        "type": "plates_arc_ResNet152",
         "args": {}
     },
     "data_loader": {
         "type": "RCICDataLoader",
         "args":{
             "data_dir": "data/raw",
-            "batch_size": 16,
+            "batch_size": 8,
             "shuffle": true,
             "validation_split": 0.1,
-            "num_workers": 40,
+            "num_workers": 12,
 	    "is_cropped": false,
-	    "four_plates":false
+	    "four_plates": true
         }
     },
     "optimizer": {
