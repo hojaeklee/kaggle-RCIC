@@ -26,8 +26,7 @@ class ImagesDS(D.Dataset):
         if jn:
             self.transforms = T.Compose([T.RandomHorizontalFlip(), T.RandomRotation(90), 
                                          T.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.4),
-                                         T.Lambda(lambda x: x + torch.randn_like(x)),
-                                         T.ToTensor()])
+                                         T.ToTensor(), T.Lambda(lambda x: x + torch.randn_like(x))])
         else:
             self.transforms = T.Compose([T.RandomHorizontalFlip(), T.RandomRotation(90), T.ToTensor()])
     

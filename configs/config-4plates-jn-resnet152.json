@@ -16,7 +16,7 @@
             "num_workers": 40,
 	    "is_cropped": false,
 	    "four_plates":true,
-	    "jn":false
+	    "jn":true
         }
     },
     "optimizer": {
@@ -44,8 +44,8 @@
         "save_period": 1,
         "verbosity": 2,
         
-        "monitor": "min loss",
-        "early_stop": 30,
+        "monitor": "min val_loss",
+        "early_stop": 10,
 
         "tensorboard": {
             "enabled": true,
