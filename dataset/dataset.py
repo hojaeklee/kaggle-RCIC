@@ -22,11 +22,7 @@ class ImagesDS(D.Dataset):
         self.len = df.shape[0]
         self.is_cropped = is_cropped
         self.four_plates = four_plates
-<<<<<<< HEAD
         
-=======
-       	print(self.four_plates) 
->>>>>>> 304723125c31bd45c31f4e839749a8582dbb41b0
         if jn:
             self.transforms = T.Compose([T.RandomHorizontalFlip(), T.RandomRotation(90), 
                                          T.ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.4),
