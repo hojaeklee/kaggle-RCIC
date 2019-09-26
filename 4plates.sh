@@ -3,7 +3,7 @@
 
 #“#SBATCH” directives that convey submission options:
 
-#SBATCH --job-name=4plates_contd31
+#SBATCH --job-name=4plates
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
@@ -19,4 +19,4 @@ module load python
 module load cudnn
 module load cuda/10.1.105 
 module load cupti/10.1.105 
-python train.py -r saved/models/plates_ResNet152/0915_154921/checkpoint-epoch61.pth -fp --lr 0.00001
+python train.py -c configs/config-4plates-resnet152.json -fp

@@ -44,12 +44,12 @@ def main(config, is_cropped=False, four_plates=False):
         batch_size = 8
     site1_data_loader = RCICDataLoader(data_dir = data_dir, batch_size = batch_size, 
                                        shuffle = False, validation_split = 0.0, 
-                                       num_workers = 12, training = False, site = 1,
+                                       num_workers = 40, training = False, site = 1,
                                        is_cropped=is_cropped, four_plates=four_plates) 
     site2_data_loader = RCICDataLoader(data_dir = data_dir, batch_size = batch_size, 
                                        shuffle = False, validation_split = 0.0, 
-                                       num_workers = 12, training = False, site = 2, 
-                                       is_cropped=is_cropped)
+                                       num_workers = 40, training = False, site = 2, 
+                                       is_cropped=is_cropped, four_plates=four_plates)
     
     # build model architecture
     model = config.initialize('arch', module_arch)
@@ -67,36 +67,78 @@ def main(config, is_cropped=False, four_plates=False):
     print(device)
     model = model.to(device)
     model.eval()
-
+    
+    #load csv so we can map group numbers and 277 labels to 1108 labels
+    train = pd.read_csv("data/raw/train.csv")
     with torch.no_grad():
-        # preds = np.empty(0)
-        predicted = []
-        for i, data in enumerate(tqdm(zip(site1_data_loader, site2_data_loader))):
-            site1_data = data[0][0].view(-1,6,64,64).to(device)
-            site2_data = data[1][0].view(-1,6,64,64).to(device)
-            output1 = model(site1_data)
-            output2 = model(site2_data)
-            if is_cropped:
-                output = torch.exp(output1).sum(dim=0) + torch.exp(output2).sum(dim=0)
-            else:
-                output = (torch.exp(output1) + torch.exp(output2))
+        if four_plates:
+            predicted = []
+            for i, data in enumerate(tqdm(zip(site1_data_loader, site2_data_loader))):
+                site1_data = data[0][0].view(-1,6,512,512).to(device)
+                site2_data = data[1][0].view(-1,6,512,512).to(device)
+                group = data[0][2].to(device)
+                #print(site1_data.shape)
+                output11, output21, output31, output41 = model(site1_data, group)
+                output12, output22, output32, output42 = model(site2_data, group)
+                
+                outs1 = torch.zeros((batch_size, 277)).to(device)
+                outs2 = torch.zeros((batch_size, 277)).to(device)
+                #print(group, site1_data.shape, site2_data.shape, output12.shape, outs1.shape, outs2.shape)
 
-            #
-            # save sample images, or do something with output here
-            #
-            # idx = output.max(dim = -1)[1].cpu().numpy()
-            # preds = np.append(preds, idx, axis = 0)
-            predicted.append(output)
+                if (group==1).any():
+                    outs1[group==1,:] = output11
+                    outs2[group==1,:] = output12
+                if (group==2).any():
+                    outs1[group==2,:] = output21
+                    outs2[group==2,:] = output22
+                if (group==3).any():
+                    outs1[group==3,:] = output31
+                    outs2[group==3,:] = output32
+                if (group==4).any():
+                    outs1[group==4,:] = output41
+                    outs2[group==4,:] = output42
+        
+                outs = (torch.exp(outs1) + torch.exp(outs2)).cpu().numpy()
+                #map from 277 labels to 1108 labels
+                for idx, g in enumerate(group.cpu().numpy()):
+                    tsub = train[train.group==g]
+                    tsubsub = tsub[tsub.group_target==outs[idx,:].argmax(0)]
+                    print(outs[idx,:].argmax(0), tsub[tsub.group_target==outs[idx,:].argmax(0)])
+                    pred = tsubsub.iloc[0].sirna
+                    predicted.append(pred)
+          
+            # predicted = np.stack(predicted).squeeze()
+            predicted = torch.cat(predicted)
+            predicted = predicted.cpu().numpy().squeeze()
 
-    # predicted = np.stack(predicted).squeeze()
-    predicted = torch.cat(predicted)
-    predicted = predicted.cpu().numpy().squeeze()
+            for idx in range(len(all_test_exp)):
+                indices = (test_csv.experiment == all_test_exp[idx])
+                preds = predicted[indices, :].copy()
+                preds = select_plate_group(preds, idx)
+                test_csv.loc[indices, 'sirna'] = preds.argmax(1)
+    
+        else:
+            predicted = []
+            for i, data in enumerate(tqdm(zip(site1_data_loader, site2_data_loader))):
+                site1_data = data[0][0].view(-1,6,64,64).to(device)
+                site2_data = data[1][0].view(-1,6,64,64).to(device)
+                output1 = model(site1_data)
+                output2 = model(site2_data)
+                if is_cropped:
+                    output = torch.exp(output1).sum(dim=0) + torch.exp(output2).sum(dim=0)
+                else:
+                    output = (torch.exp(output1) + torch.exp(output2))
+                predicted.append(output)
 
-    for idx in range(len(all_test_exp)):
-        indices = (test_csv.experiment == all_test_exp[idx])
-        preds = predicted[indices, :].copy()
-        preds = select_plate_group(preds, idx)
-        test_csv.loc[indices, 'sirna'] = preds.argmax(1)
+            # predicted = np.stack(predicted).squeeze()
+            predicted = torch.cat(predicted)
+            predicted = predicted.cpu().numpy().squeeze()
+
+            for idx in range(len(all_test_exp)):
+                indices = (test_csv.experiment == all_test_exp[idx])
+                preds = predicted[indices, :].copy()
+                preds = select_plate_group(preds, idx)
+                test_csv.loc[indices, 'sirna'] = preds.argmax(1)
 
     test_csv['sirna'] = test_csv['sirna'].astype(int)
     save_dir = config.save_dir

@@ -99,21 +99,21 @@ class plates_arc_ResNet50(BaseModel):
         preloaded.conv1 = new_conv
         num_ftrs = preloaded.fc.in_features
         preloaded.fc = nn.Identity()
-        self.fc1 = nn.Linear(num_ftrs, num_classes)
-        self.fc2 = nn.Linear(num_ftrs, num_classes)
-        self.fc3 = nn.Linear(num_ftrs, num_classes)
-        self.fc4 = nn.Linear(num_ftrs, num_classes)
+        self.model = preloaded
+        self.model.fc1 = nn.Linear(num_ftrs, num_classes)
+        self.model.fc2 = nn.Linear(num_ftrs, num_classes)
+        self.model.fc3 = nn.Linear(num_ftrs, num_classes)
+        self.model.fc4 = nn.Linear(num_ftrs, num_classes)
 
         self.model = preloaded
-
     def forward(self, x, groups):
         out = self.model(x)
         #compute angles by normalizing and taking inner product
         
-        res1 = F.linear(F.normalize(out[groups==1, :]), F.normalize(self.fc1.weight))
-        res2 = F.linear(F.normalize(out[groups==2, :]), F.normalize(self.fc2.weight))
-        res3 = F.linear(F.normalize(out[groups==3, :]), F.normalize(self.fc3.weight))
-        res4 = F.linear(F.normalize(out[groups==4, :]), F.normalize(self.fc4.weight))
+        res1 = F.linear(F.normalize(out[groups==1, :]), F.normalize(self.model.fc1.weight))
+        res2 = F.linear(F.normalize(out[groups==2, :]), F.normalize(self.model.fc2.weight))
+        res3 = F.linear(F.normalize(out[groups==3, :]), F.normalize(self.model.fc3.weight))
+        res4 = F.linear(F.normalize(out[groups==4, :]), F.normalize(self.model.fc4.weight))
         
         return res1, res2, res3, res4
 
@@ -129,26 +129,26 @@ class plates_ResNet50(BaseModel):
         num_ftrs = preloaded.fc.in_features
         #just an extra linear layer for ease of implementation
         preloaded.fc = Identity() 
-        self.p1 = nn.Linear(num_ftrs, num_plate_classes) 
-        self.p2 = nn.Linear(num_ftrs, num_plate_classes) 
-        self.p3 = nn.Linear(num_ftrs, num_plate_classes) 
-        self.p4 = nn.Linear(num_ftrs, num_plate_classes)
-
         self.model = preloaded
+        self.model.p1 = nn.Linear(num_ftrs, num_plate_classes) 
+        self.model.p2 = nn.Linear(num_ftrs, num_plate_classes) 
+        self.model.p3 = nn.Linear(num_ftrs, num_plate_classes) 
+        self.model.p4 = nn.Linear(num_ftrs, num_plate_classes)
+
         self.num_classes = num_classes
         self.num_plate_classes = num_plate_classes
 
     def forward(self, x, groups):
         out = self.model(x)
         
-        res1 = F.log_softmax(self.p1(out[groups==1, :]), dim=1)
-        res2 = F.log_softmax(self.p2(out[groups==2, :]), dim=1)
-        res3 = F.log_softmax(self.p3(out[groups==3, :]), dim=1)
-        res4 = F.log_softmax(self.p4(out[groups==4, :]), dim=1)
-        #result[groups==1, :] = F.log_softmax(self.p1(out[groups==1, :]), dim=1)
-        #result[groups==2, :] = F.log_softmax(self.p2(out[groups==2, :]), dim=1)
-        #result[groups==3, :] = F.log_softmax(self.p3(out[groups==3, :]), dim=1)
-        #result[groups==4, :] = F.log_softmax(self.p4(out[groups==4, :]), dim=1)
+        res1 = F.log_softmax(self.model.p1(out[groups==1, :]), dim=1)
+        res2 = F.log_softmax(self.model.p2(out[groups==2, :]), dim=1)
+        res3 = F.log_softmax(self.model.p3(out[groups==3, :]), dim=1)
+        res4 = F.log_softmax(self.model.p4(out[groups==4, :]), dim=1)
+        #result[groups==1, :] = F.log_softmax(self.model.p1(out[groups==1, :]), dim=1)
+        #result[groups==2, :] = F.log_softmax(self.model.p2(out[groups==2, :]), dim=1)
+        #result[groups==3, :] = F.log_softmax(self.model.p3(out[groups==3, :]), dim=1)
+        #result[groups==4, :] = F.log_softmax(self.model.p4(out[groups==4, :]), dim=1)
 
         return res1, res2, res3, res4
 
@@ -205,21 +205,21 @@ class plates_arc_ResNet152(BaseModel):
         preloaded.conv1 = new_conv
         num_ftrs = preloaded.fc.in_features
         preloaded.fc = nn.Identity()
-        self.fc1 = nn.Linear(num_ftrs, num_classes)
-        self.fc2 = nn.Linear(num_ftrs, num_classes)
-        self.fc3 = nn.Linear(num_ftrs, num_classes)
-        self.fc4 = nn.Linear(num_ftrs, num_classes)
-
         self.model = preloaded
+        self.model.fc1 = nn.Linear(num_ftrs, num_classes)
+        self.model.fc2 = nn.Linear(num_ftrs, num_classes)
+        self.model.fc3 = nn.Linear(num_ftrs, num_classes)
+        self.model.fc4 = nn.Linear(num_ftrs, num_classes)
+
 
     def forward(self, x, groups):
         out = self.model(x)
         #compute angles by normalizing and taking inner product
         
-        res1 = F.linear(F.normalize(out[groups==1, :]), F.normalize(self.fc1.weight))
-        res2 = F.linear(F.normalize(out[groups==2, :]), F.normalize(self.fc2.weight))
-        res3 = F.linear(F.normalize(out[groups==3, :]), F.normalize(self.fc3.weight))
-        res4 = F.linear(F.normalize(out[groups==4, :]), F.normalize(self.fc4.weight))
+        res1 = F.linear(F.normalize(out[groups==1, :]), F.normalize(self.model.fc1.weight))
+        res2 = F.linear(F.normalize(out[groups==2, :]), F.normalize(self.model.fc2.weight))
+        res3 = F.linear(F.normalize(out[groups==3, :]), F.normalize(self.model.fc3.weight))
+        res4 = F.linear(F.normalize(out[groups==4, :]), F.normalize(self.model.fc4.weight))
         
         return res1, res2, res3, res4
 
@@ -235,26 +235,21 @@ class plates_ResNet152(BaseModel):
         num_ftrs = preloaded.fc.in_features
         #just an extra linear layer for ease of implementation
         preloaded.fc = Identity() 
-        self.p1 = nn.Linear(num_ftrs, num_plate_classes) 
-        self.p2 = nn.Linear(num_ftrs, num_plate_classes) 
-        self.p3 = nn.Linear(num_ftrs, num_plate_classes) 
-        self.p4 = nn.Linear(num_ftrs, num_plate_classes)
-
         self.model = preloaded
+        self.model.p1 = nn.Linear(num_ftrs, num_plate_classes) 
+        self.model.p2 = nn.Linear(num_ftrs, num_plate_classes) 
+        self.model.p3 = nn.Linear(num_ftrs, num_plate_classes) 
+        self.model.p4 = nn.Linear(num_ftrs, num_plate_classes)
+
         self.num_classes = num_classes
         self.num_plate_classes = num_plate_classes
 
     def forward(self, x, groups):
         out = self.model(x)
-        
-        res1 = F.log_softmax(self.p1(out[groups==1, :]), dim=1)
-        res2 = F.log_softmax(self.p2(out[groups==2, :]), dim=1)
-        res3 = F.log_softmax(self.p3(out[groups==3, :]), dim=1)
-        res4 = F.log_softmax(self.p4(out[groups==4, :]), dim=1)
-        #result[groups==1, :] = F.log_softmax(self.p1(out[groups==1, :]), dim=1)
-        #result[groups==2, :] = F.log_softmax(self.p2(out[groups==2, :]), dim=1)
-        #result[groups==3, :] = F.log_softmax(self.p3(out[groups==3, :]), dim=1)
-        #result[groups==4, :] = F.log_softmax(self.p4(out[groups==4, :]), dim=1)
+        res1 = F.log_softmax(self.model.p1(out[groups==1, :]), dim=1)
+        res2 = F.log_softmax(self.model.p2(out[groups==2, :]), dim=1)
+        res3 = F.log_softmax(self.model.p3(out[groups==3, :]), dim=1)
+        res4 = F.log_softmax(self.model.p4(out[groups==4, :]), dim=1)
 
         return res1, res2, res3, res4
 

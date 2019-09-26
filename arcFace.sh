@@ -19,4 +19,4 @@ module load python
 module load cudnn
 module load cuda/10.1.105 
 module load cupti/10.1.105 
-python train.py -r saved/models/arc_ResNet152/0912_151914/model_best.pth
+python train.py -c configs/config-arc-resnet152.json
