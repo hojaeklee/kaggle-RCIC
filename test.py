@@ -103,7 +103,7 @@ def main(config, is_cropped=False, four_plates=False):
                 for idx, g in enumerate(group.cpu().numpy()):
                     tsub = train[train.group==g]
                     tsubsub = tsub[tsub.group_target==outs[idx,:].argmax(0)]
-                    print(outs[idx,:].argmax(0), tsub[tsub.group_target==outs[idx,:].argmax(0)])
+                    #print(outs[idx,:].argmax(0), tsub[tsub.group_target==outs[idx,:].argmax(0)])
                     pred = tsubsub.iloc[0].sirna
                     predicted.append(pred)
           
