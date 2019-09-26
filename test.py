@@ -72,6 +72,7 @@ def main(config, is_cropped=False, four_plates=False):
     train = pd.read_csv("data/raw/train.csv")
     with torch.no_grad():
         if four_plates:
+
             predicted = []
             for i, data in enumerate(tqdm(zip(site1_data_loader, site2_data_loader))):
                 site1_data = data[0][0].view(-1,6,512,512).to(device)
@@ -81,41 +82,41 @@ def main(config, is_cropped=False, four_plates=False):
                 output11, output21, output31, output41 = model(site1_data, group)
                 output12, output22, output32, output42 = model(site2_data, group)
                 
-                outs1 = torch.zeros((batch_size, 277)).to(device)
-                outs2 = torch.zeros((batch_size, 277)).to(device)
+                outs1 = torch.zeros((group.shape[0], 277)).to(device)
+                outs2 = torch.zeros((group.shape[0], 277)).to(device)
                 #print(group, site1_data.shape, site2_data.shape, output12.shape, outs1.shape, outs2.shape)
-
-                if (group==1).any():
-                    outs1[group==1,:] = output11
-                    outs2[group==1,:] = output12
-                if (group==2).any():
-                    outs1[group==2,:] = output21
-                    outs2[group==2,:] = output22
-                if (group==3).any():
-                    outs1[group==3,:] = output31
-                    outs2[group==3,:] = output32
-                if (group==4).any():
-                    outs1[group==4,:] = output41
-                    outs2[group==4,:] = output42
-        
+                try:
+                    if (group==1).any():
+                        outs1[group==1,:] = output11
+                        outs2[group==1,:] = output12
+                    if (group==2).any():
+                        outs1[group==2,:] = output21
+                        outs2[group==2,:] = output22
+                    if (group==3).any():
+                        outs1[group==3,:] = output31
+                        outs2[group==3,:] = output32
+                    if (group==4).any():
+                        outs1[group==4,:] = output41
+                        outs2[group==4,:] = output42
+                except:
+                    print(group)
                 outs = (torch.exp(outs1) + torch.exp(outs2)).cpu().numpy()
                 #map from 277 labels to 1108 labels
                 for idx, g in enumerate(group.cpu().numpy()):
                     tsub = train[train.group==g]
                     tsubsub = tsub[tsub.group_target==outs[idx,:].argmax(0)]
-                    #print(outs[idx,:].argmax(0), tsub[tsub.group_target==outs[idx,:].argmax(0)])
                     pred = tsubsub.iloc[0].sirna
                     predicted.append(pred)
           
             # predicted = np.stack(predicted).squeeze()
-            predicted = torch.cat(predicted)
-            predicted = predicted.cpu().numpy().squeeze()
+            #predicted = torch.cat(predicted)
+            #predicted = predicted.cpu().numpy().squeeze()
 
-            for idx in range(len(all_test_exp)):
-                indices = (test_csv.experiment == all_test_exp[idx])
-                preds = predicted[indices, :].copy()
-                preds = select_plate_group(preds, idx)
-                test_csv.loc[indices, 'sirna'] = preds.argmax(1)
+            #for idx in range(len(all_test_exp)):
+                #indices = (test_csv.experiment == all_test_exp[idx])
+                #preds = predicted[indices, :].copy()
+                #preds = select_plate_group(preds, idx)
+            test_csv['sirna'] = predicted
     
         else:
             predicted = []

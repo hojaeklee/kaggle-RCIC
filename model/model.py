@@ -105,7 +105,6 @@ class plates_arc_ResNet50(BaseModel):
         self.model.fc3 = nn.Linear(num_ftrs, num_classes)
         self.model.fc4 = nn.Linear(num_ftrs, num_classes)
 
-        self.model = preloaded
     def forward(self, x, groups):
         out = self.model(x)
         #compute angles by normalizing and taking inner product
@@ -129,6 +128,7 @@ class plates_ResNet50(BaseModel):
         num_ftrs = preloaded.fc.in_features
         #just an extra linear layer for ease of implementation
         preloaded.fc = Identity() 
+
         self.model = preloaded
         self.model.p1 = nn.Linear(num_ftrs, num_plate_classes) 
         self.model.p2 = nn.Linear(num_ftrs, num_plate_classes) 
@@ -145,10 +145,6 @@ class plates_ResNet50(BaseModel):
         res2 = F.log_softmax(self.model.p2(out[groups==2, :]), dim=1)
         res3 = F.log_softmax(self.model.p3(out[groups==3, :]), dim=1)
         res4 = F.log_softmax(self.model.p4(out[groups==4, :]), dim=1)
-        #result[groups==1, :] = F.log_softmax(self.model.p1(out[groups==1, :]), dim=1)
-        #result[groups==2, :] = F.log_softmax(self.model.p2(out[groups==2, :]), dim=1)
-        #result[groups==3, :] = F.log_softmax(self.model.p3(out[groups==3, :]), dim=1)
-        #result[groups==4, :] = F.log_softmax(self.model.p4(out[groups==4, :]), dim=1)
 
         return res1, res2, res3, res4
 
