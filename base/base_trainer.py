@@ -96,8 +96,11 @@ class BaseTrainer:
                     not_improved_count = 0
                     best = True
                 else:
-                    not_improved_count += 1
-
+                    try:
+                        not_improved_count += 1
+                    except:
+                        #this can happen when resuming a job so just reset the not improved count
+                        not_improved_count = 0
                 if not_improved_count > self.early_stop:
                     self.logger.info("Validation performance didn\'t improve for {} epochs. "
                                      "Training stops.".format(self.early_stop))
