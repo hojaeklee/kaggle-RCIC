@@ -1,5 +1,5 @@
 {
-    "name": "ResNet152",
+    "name": "cropped_ResNet152",
     "n_gpu": 1,
 
     "arch": {
@@ -9,12 +9,13 @@
     "data_loader": {
         "type": "RCICDataLoader",
         "args":{
-            "data_dir": "data/raw",
+            "data_dir": "data/cropped",
             "batch_size": 8,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 12,
-	    "is_cropped": false
+	    "is_cropped": true,
+	    "four_plates": false
         }
     },
     "optimizer": {

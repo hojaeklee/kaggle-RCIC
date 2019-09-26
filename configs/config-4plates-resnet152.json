@@ -1,9 +1,9 @@
 {
-    "name": "ResNet152",
+    "name": "plates_ResNet152",
     "n_gpu": 1,
 
     "arch": {
-        "type": "ResNet152",
+        "type": "plates_ResNet152",
         "args": {}
     },
     "data_loader": {
@@ -13,14 +13,16 @@
             "batch_size": 8,
             "shuffle": true,
             "validation_split": 0.1,
-            "num_workers": 12,
-	    "is_cropped": false
+            "num_workers": 40,
+	    "is_cropped": false,
+	    "four_plates":true,
+	    "jn":false
         }
     },
     "optimizer": {
         "type": "SGD",
         "args":{
-            "lr": 0.01,
+            "lr": 0.001,
             "momentum": 0.9,
             "weight_decay": 0
         }
@@ -42,8 +44,8 @@
         "save_period": 1,
         "verbosity": 2,
         
-        "monitor": "min val_loss",
-        "early_stop": 10,
+        "monitor": "min loss",
+        "early_stop": 30,
 
         "tensorboard": {
             "enabled": true,

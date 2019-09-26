@@ -9,11 +9,13 @@ def main():
             line = line[2:-1]
             image_dir = "../../data/raw/"
             image_dir = os.path.join(image_dir, line) + "/"
-            
+            print(image_dir)
+
             original_cwd = os.getcwd()
 
             os.chdir(image_dir)
             os.listdir()
+
             sample_ids = list(set(["_".join(file.split("_")[:2]) for file in glob.glob("*.png")]))
             os.chdir(original_cwd)
             save_dir = os.path.join("../../data/cropped/", line) + "/"
