@@ -76,6 +76,28 @@ class ResNet152(BaseModel):
         out = F.log_softmax(out, dim = 1)
         return out
 
+
+class ResNet152_twohead(BaseModel):
+    def __init__(self, num_classes = 1108, num_channels = 6):
+        super().__init__()
+        preloaded = torchvision.models.resnet152(pretrained = True)
+        trained_kernel = preloaded.conv1.weight
+        new_conv = nn.Conv2d(num_channels, 64, 7, 2, 3)
+        with torch.no_grad():
+            new_conv.weight[:,:] = torch.stack([torch.mean(trained_kernel, 1)] * 6, dim = 1)
+        preloaded.conv1 = new_conv
+        num_ftrs = preloaded.fc.in_features
+        preloaded.fc = nn.Linear(num_ftrs, num_classes)
+
+        self.model = preloaded
+
+    def forward(self, img, neg_img):
+        vec = self.model(img)
+        neg_vec = self.model(neg_img)
+
+        out = vec - neg_vec
+        out = F.log_softmax(out, dim = 1)
+        return out
 class ResNext101_32x8d(BaseModel):
     def __init__(self, num_classes = 1108, num_channels = 6):
         super().__init__()

@@ -1,16 +1,16 @@
 {
-    "name": "ResNet152",
+    "name": "ResNet152_TwoHead",
     "n_gpu": 2,
 
     "arch": {
-        "type": "ResNet152",
+        "type": "ResNet152_twohead",
         "args": {}
     },
     "data_loader": {
         "type": "RCICDataLoader",
         "args":{
             "data_dir": "data/raw",
-            "batch_size": 16,
+            "batch_size": 8,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 2
